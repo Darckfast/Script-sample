@@ -263,11 +263,11 @@ while [ $op ] ; do
 			text=$(echo ".::. Verificando...")
 			stty -echo
 			while [ $tasksDone -le $taskCount ]; do
-	  			(( tasksDone += 1 ))
+				(( tasksDone += 1 ))
 				progressBar $taskCount $taskDone $text
 				sleep 0.001		
 			done
-			git status			
+			git status 
 			;;
 
 		7)
@@ -294,8 +294,8 @@ while [ $op ] ; do
 			;;
 		9)
 			text=$(echo ".::. Pushing...")
-			stty -echo
 			git push
+			stty -echo			
 			while [ $tasksDone -le $taskCount ]; do
 	  			(( tasksDone += 1 ))
 				progressBar $taskCount $taskDone $text
@@ -308,7 +308,7 @@ while [ $op ] ; do
 		printf "${op} <--- ${RED}${REVERSE}${BLINK}Não é uma opção válida\n${NORMAL}"
 		;;
 	esac
-
+	
 	printf "\n${REVERSE}${BLINK}Digite 0 para sair ou digite outra opção\n${NORMAL}"
 	stty echo
 	read  -p "Opção:" op 
