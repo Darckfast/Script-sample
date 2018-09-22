@@ -285,12 +285,12 @@ while [ $op ] ; do
 			read msg
 			text=$(echo ".::. Comitando...")
 			stty -echo
-			git commit -m "${msg}"
 			while [ $tasksDone -le $taskCount ]; do
 	  			(( tasksDone += 1 ))
 				progressBar $taskCount $taskDone $text
 				sleep 0.001		
-			done			
+			done
+			git commit -m "${msg}"			
 			;;
 		9)
 			text=$(echo ".::. Pushing...")
