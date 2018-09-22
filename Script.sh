@@ -6,6 +6,7 @@
 # Functions
 progressBarWidth=20
 RED='\033[0;31m'
+LRED='\033[0;91m'
 GREEN='\033[0;32m'
 LBLUE='\033[0;94m'
 BOLD='\e[1m'
@@ -19,7 +20,57 @@ BGREEN='\e[42m'
 NORMAL='\e[0m'
 
 sp="/-\|"
+MENU(){
+stty echo
+printf "${GREEN}" 
 
+base64 -d <<<"H4sICBTDnlsAA2xvZ28udHh0AJWPQQ7AIAgE77yYJ/RYEmmTJn7Ol7SaiFqgWsOBLMjOpmNLuvhE
+U/1cnYytGdQuJN67iqv6y5nJXeBrVORyBI9OjmJ+1krokMhbaH/LJWgoAxCZdutJSxZUZnY2yhCT
+zBpsJJzlEiZrEKv4IEurGzHqBMAfD25kQjg+4QIAAA==
+" | gunzip
+
+printf "${NORMAL}"
+
+DRAW
+echo -e " 	lqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqk"
+echo -e " 	x				 x"
+echo -e " 	x				 x"
+echo -e " 	x				 x"
+echo -e " 	x				 x"
+echo -e " 	x				 x"
+echo -e " 	x				 x"
+echo -e " 	x				 x"
+echo -e " 	x				 x"
+echo -e " 	x				 x"
+echo -e " 	x				 x"
+echo -e " 	x				 x"
+echo -e " 	mqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqj"
+WRITE
+
+PUT 9 13; printf "1) Adicionar upstream"
+PUT 10 13; printf "2) Remover upstream"
+PUT 11 13; printf "3) Fetch"
+PUT 12 13; printf "4) Merge"
+PUT 13 13; printf "5) Gerar CPF(Auto Copy)"
+PUT 14 13; printf "6) Status"
+PUT 15 13; printf "7) Add"
+PUT 16 13; printf "8) Commit"
+PUT 17 13; printf "9) Push"
+PUT 18 13; printf "10) Resetar Menu"
+PUT 19 13; printf "0) Sair"
+}
+
+selectUpstream(){
+	var="$( git remote -v)"
+
+	for word in $var 
+	do
+		if [ ${#word} -gt 8 ]; then 
+			url=$word
+			break;		
+		fi
+	done
+}
 geradorCPF(){
 	cpf=$(echo $1 | tr -d -c 0123456789)
 	# se não for digitado o parâmetro do cpf
@@ -149,49 +200,16 @@ echo -e ""
 NORM
 clear
 sleep .2
-
-stty echo
-printf "${GREEN}" 
-
-base64 -d <<<"H4sICBTDnlsAA2xvZ28udHh0AJWPQQ7AIAgE77yYJ/RYEmmTJn7Ol7SaiFqgWsOBLMjOpmNLuvhE
-U/1cnYytGdQuJN67iqv6y5nJXeBrVORyBI9OjmJ+1krokMhbaH/LJWgoAxCZdutJSxZUZnY2yhCT
-zBpsJJzlEiZrEKv4IEurGzHqBMAfD25kQjg+4QIAAA==
-" | gunzip
-
-printf "${NORMAL}"
-
-DRAW
-echo -e " 	lqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqk"
-echo -e " 	x				 x"
-echo -e " 	x				 x"
-echo -e " 	x				 x"
-echo -e " 	x				 x"
-echo -e " 	x				 x"
-echo -e " 	x				 x"
-echo -e " 	x				 x"
-echo -e " 	x				 x"
-echo -e " 	x				 x"
-echo -e " 	x				 x"
-echo -e " 	mqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqj"
-WRITE
-
-PUT 9 13; printf "1) Adicionar upstream"
-PUT 10 13; printf "2) Fetch"
-PUT 11 13; printf "3) Remover upstream"
-PUT 12 13; printf "4) Merge"
-PUT 13 13; printf "5) Gerar CPF(Auto Copy)"
-PUT 14 13; printf "6) Status"
-PUT 15 13; printf "7) Add"
-PUT 16 13; printf "8) Commit"
-PUT 17 13; printf "9) Push"
-PUT 18 13; printf "0) Sair"
-
+MENU
+f=0
 printf "\n\n\nOpção: "
-read op 
 
-while [ $op ] ; do 
+read op 
+while [ true ] ; do
+ 
 	taskCount=10
 	tasksDone=0
+	
 	case $op in
 		1)
 			printf "${REVERSE}URL/SSH:${NORMAL} "
@@ -199,7 +217,6 @@ while [ $op ] ; do
 			if [ ${url} != 0 ]; then
 				git remote add upstream ${url}
 				text=$(echo ".:+>${url}")
-				HIDECURSOR
 				stty -echo 		
 				while [ $tasksDone -le $taskCount ]; do
 		  			(( tasksDone += 1 ))
@@ -210,7 +227,20 @@ while [ $op ] ; do
 			;;
 		
 		2)
+			selectUpstream	|tr '\n' ' '		
+			git remote rm upstream
+			text=$(echo "--:.${url}")
+			stty -echo
+		
+			while [ $tasksDone -le $taskCount ]; do
+	  			(( tasksDone += 1 ))
+				progressBar $taskCount $taskDone $text
+				sleep 0.001		
+			done
+			;;			
+		3)
 			git fetch upstream
+			selectUpstream	|tr '\n' ' '		
 			text=$(echo "<+:.${url}")
 			stty -echo
 			while [ $tasksDone -le $taskCount ]; do
@@ -219,33 +249,25 @@ while [ $op ] ; do
 				sleep 0.001		
 			done
 			;;
-		3)
-			git rm upstream
-			text=$(echo "--:.${url}")
-			stty -echo
-			while [ $tasksDone -le $taskCount ]; do
-	  			(( tasksDone += 1 ))
-				progressBar $taskCount $taskDone $text
-				sleep 0.001		
-			done
-			;;
 		4)
-			printf "${REVERSE}${BLINK}Merge from:${NORMAL} "
+			printf "${REVERSE}${BLINK}Merge from (Sair = 0):${NORMAL}"
 			read url
-			printf "${BRED}${REVERSE}Você está prestes a executar o seguinte comando:\n${NORMAL}"
-			printf "${RED}git merge ${url}\n${NORMAL}"
-			printf "${BRED}${REVERSE}Tem certeza que desaja continuar ?\n"
-			printf "Digite S para continuar ou qualquer outro comando para cancelar${NORMAL}\n"
-			read op
-			if [ ${op} = S ]; then	
-				stty -echo		
-				git merge ${url}
-				text=$(echo "<=:.${url}")
-				while [ $tasksDone -le $taskCount ]; do
-		  			(( tasksDone += 1 ))
-					progressBar $taskCount $taskDone $text
-					sleep 0.001		
-				done
+			if [ ${url} != 0 ]; then						
+				printf "${BRED}${REVERSE}Você está prestes a executar o seguinte comando:${NORMAL}\n\n"
+				printf "${RED}--| git merge ${url} |--${NORMAL}\n\n"
+				printf "${RED}Tem certeza que desaja continuar ?\n"
+				printf "Digite S para continuar ou qualquer outro comando para cancelar${NORMAL}\n"
+				read op
+				if [ ${op} = S ]; then	
+					stty -echo		
+					git merge ${url}
+					text=$(echo "<=:.${url}")
+					while [ $tasksDone -le $taskCount ]; do
+			  			(( tasksDone += 1 ))
+						progressBar $taskCount $taskDone $text
+						sleep 0.001		
+					done
+				fi
 			fi
 			;;
 		5)
@@ -293,7 +315,7 @@ while [ $op ] ; do
 			git commit -m "${msg}"			
 			;;
 		9)
-			text=$(echo ".::. Pushing...")
+			text=$(echo ".::. Pushing...") 
 			git push
 			stty -echo			
 			while [ $tasksDone -le $taskCount ]; do
@@ -304,13 +326,26 @@ while [ $op ] ; do
 			;;
 		0) break; ;;	
 		
+		10)
+			clear
+			MENU
+			printf "\n"
+			f=1;
+		;;
+ 
 		*)
 		printf "${op} <--- ${RED}${REVERSE}${BLINK}Não é uma opção válida\n${NORMAL}"
 		;;
 	esac
 	
-	printf "\n${REVERSE}${BLINK}Digite 0 para sair ou digite outra opção\n${NORMAL}"
 	stty echo
-	read  -p "Opção:" op 
+	
+	if [ $f -eq 1 ]; then 
+		f=0
+		printf "\n\n"
+	else	
+		printf "\n${REVERSE}${BLINK}Pressione 'Enter' para retornar ao menu\n${NORMAL}"
+	fi	
+	read -p "Opção: " op
 done
 stty echo
